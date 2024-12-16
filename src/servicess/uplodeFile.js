@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
       // Set the filename to the original file name (you can modify this to add timestamps for uniqueness)
-      cb(null, Date.now() + path.extname(file.originalname));
+      cb(null,  Date.now() + path.extname(file.originalname));
     }
   });
   

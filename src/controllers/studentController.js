@@ -29,6 +29,7 @@ const uploadFile=async(req,res)=>{
 const getRegistration = async (req, res) => {
   try {
     // Find the registration by ID
+    console.log("................")
     const registration = await Registration.find();
     
     if (!registration) {
@@ -103,5 +104,47 @@ const deleteRegistration = async (req, res) => {
 };
 
 
+const getPdfe=(req,res)=>{
+res.sendFile("/home/jack/Desktop/offic/quizweb/uploads/1734329964117.pdf")
+}
+const getPdf= async(req,res)=>{
 
-module.exports={uploadFile,getRegistration,deleteRegistration}
+  try {
+    // Extract user ID from request params
+    const userId = req.params.id;
+
+    // Find the user in the database by ID
+    const user = await Registration.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if the CV path exists in the user document
+    if (!user.cv) {
+      return res.status(404).json({ message: 'CV not found for this user' });
+    }
+    
+    // Resolve the absolute path of the CV
+    const filePath = path.resolve(user.cv);
+    
+    // Send the file to the user
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('Error sending file:', err);
+        return res.status(500).json({ message: 'Error sending file' });
+      }
+    });
+  } catch (error) {
+    console.error('Error retrieving CV:', error);
+    console.log(__dirname)
+    console.log(process.pwd,"..................")
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+
+
+
+
+module.exports={uploadFile,getRegistration,deleteRegistration,getPdf}

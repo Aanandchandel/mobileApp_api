@@ -42,9 +42,9 @@ if (!name || !mobile || !email || !higherQualification || !domain || !duration |
     }
 
     // 8. Validate the duration (1-12 months)
-  if (duration < 1 || duration > 12) {
-    return res.status(400).json({ error: 'Duration must be between 1 and 12 months.' });
-  }
+  // if (duration < 1 || duration > 12) {
+  //   return res.status(400).json({ error: 'Duration must be between 1 and 12 months.' });
+  // }
    // If everything is valid, proceed to the next middleware or route handler
 next()
 

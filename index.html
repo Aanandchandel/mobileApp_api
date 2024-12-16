@@ -1,0 +1,21 @@
+<form action="http://localhost:4000/student" method="POST" enctype="multipart/form-data">
+  <input type="text" name="name" placeholder="Enter your name" required />
+  <input type="text" name="mobile" placeholder="Enter your mobile number" required />
+  <input type="email" name="email" placeholder="Enter your email" required />
+  <select name="higherQualification" required>
+    <option value="High School">High School</option>
+    <option value="Undergraduate">Undergraduate</option>
+    <option value="Postgraduate">Postgraduate</option>
+    <option value="Doctorate">Doctorate</option>
+  </select>
+  <input type="text" name="domain" placeholder="Enter your domain" required />
+  <input type="number" name="duration" placeholder="Duration in months" required />
+  <input type="number" name="fee" placeholder="fee" required/>
+  <select name="mode" required>
+    <option value="online">Online</option>
+    <option value="offline">Offline</option>
+  </select>
+  <input type="text" name="reference" placeholder="Reference" required />
+  <input type="file" name="cv" required />
+  <button type="submit">Register</button>
+</form>

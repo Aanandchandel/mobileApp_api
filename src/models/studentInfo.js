@@ -22,7 +22,7 @@ const registrationSchema = new mongoose.Schema({
   higherQualification: {
     type: String,
     required: true,
-    enum: ['High School', 'Undergraduate', 'Postgraduate', 'Doctorate'], // Enum for possible qualifications
+    // enum: ['High School', 'Undergraduate', 'Postgraduate', 'Doctorate'], // Enum for possible qualifications
   },
   domain: {
     type: String,
@@ -32,8 +32,8 @@ const registrationSchema = new mongoose.Schema({
   duration: {
     type: Number,
     required: true,
-    min: 1, // Minimum duration is 1 month
-    max: 12, // Maximum duration is 12 months
+    // min: 1, // Minimum duration is 1 month
+    // max: 12, // Maximum duration is 12 months
   },
   mode: {
     type: String,
@@ -44,6 +44,9 @@ const registrationSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+  },
+  fee:{type:Number,
+    require:true
   },
   cv: {
     type: String, // This will store the file path of the uploaded CV

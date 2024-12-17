@@ -1,150 +1,153 @@
-const Registration =require("../models/studentInfo")
-const uploadFile=async(req,res)=>{
-    try{
-        if (!req.file) {
-            return res.status(400).send('No file uploaded');
-          }
-          const registrationData = new Registration({
-            ...req.body,
-            cv: req.file.path // Store the path of the uploaded file in the database
-          });
-      
-          // Save the data to the database
-          await registrationData.save();
-      // console.log("hiii","...........",registrationData)
-         return  res.status(201).json({
-            message: 'Registration successful',
-            data: registrationData
-          });
-    }   
-    catch(err){
-        console.log("falling in catch")
-        return res.status(500).json({message:err})
+const fs = require('fs/promises'); // Promises-based fs
+const fss = require('fs'); // For non-promises methods like readdir
+const path = require('path');
+const Registration = require('../models/studentInfo');
 
+// Upload a new file and save registration
+const uploadFile = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
     }
-}
 
+    const registrationData = new Registration({
+      ...req.body,
+      cv: req.file.path // Save file path in database
+    });
 
-// Controller to get a registration by ID
+    await registrationData.save();
+
+    return res.status(201).json({
+      message: 'Registration successful',
+      data: registrationData
+    });
+  } catch (err) {
+    console.error('Error during upload:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Get all registrations
 const getRegistration = async (req, res) => {
   try {
-    // Find the registration by ID
-    console.log("................")
-    const registration = await Registration.find();
-    
-    if (!registration) {
-      return res.status(404).json({ success: false, message: 'Registration not found' });
+    const registrations = await Registration.find();
+
+    if (!registrations.length) {
+      return res.status(404).json({ success: false, message: 'No registrations found' });
     }
 
-    // Return the registration data if found
-    res.status(200).json({ success: true, registration });
+    res.status(200).json({ success: true, registrations });
   } catch (error) {
-    console.error(error);
+    console.error('Error retrieving registrations:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-
-
-// Controller to delete a registration by ID
-const path = require('path');
-const fs = require('fs/promises'); // Use promises for async file handling
-
+// Delete a specific registration by ID
 const deleteRegistration = async (req, res) => {
-  const { id } = req.params; // Get the ID from the request parameters
+  const { id } = req.params;
 
   try {
-    // Find the registration by ID
     const registration = await Registration.findById(id);
     if (!registration) {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
 
-    const cv = registration.cv; // Get the file path for the CV
-    const filePath = path.join( cv);
-
-    let cvDeleted = false;
-    let userDeleted = false;
+    const filePath = path.resolve(registration.cv);
 
     try {
-      // Delete the CV file
       await fs.unlink(filePath);
-      cvDeleted = true;
+      console.log('CV file deleted:', filePath);
     } catch (fileError) {
       if (fileError.code !== 'ENOENT') {
-        // Log unexpected file errors
         console.error('Error deleting CV file:', fileError);
         return res.status(500).json({ success: false, message: 'Error deleting CV file' });
       }
     }
 
-    try {
-      // Delete the registration from the database
-      await Registration.findByIdAndDelete(id);
-      userDeleted = true;
-    } catch (dbError) {
-      console.error('Error deleting user:', dbError);
-      return res.status(500).json({ success: false, message: 'Error deleting user from database' });
-    }
+    await Registration.findByIdAndDelete(id);
 
-    // Return the appropriate response based on what was deleted
-    if (cvDeleted && userDeleted) {
-      return res.status(200).json({ success: true, message: 'User and CV deleted successfully' });
-    } else if (cvDeleted) {
-      return res.status(200).json({ success: true, message: 'CV deleted, but user deletion failed' });
-    } else if (userDeleted) {
-      return res.status(200).json({ success: true, message: 'User deleted, but CV deletion failed' });
-    } else {
-      return res.status(500).json({ success: false, message: 'Deletion failed' });
-    }
+    return res.status(200).json({ success: true, message: 'User and CV deleted successfully' });
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Server error during deletion:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-
-const getPdfe=(req,res)=>{
-res.sendFile("/home/jack/Desktop/offic/quizweb/uploads/1734329964117.pdf")
-}
-const getPdf= async(req,res)=>{
+// Get list of all uploaded CVs
+const getPdfs = async (req, res) => {
+  const uploadDir = path.join(__dirname, '../../uploads');
+  console.log('Uploads directory:', uploadDir);
 
   try {
-    // Extract user ID from request params
+    const files = await fs.readdir(uploadDir);
+    res.status(200).json({ files });
+  } catch (err) {
+    console.error('Error reading uploads directory:', err);
+    res.status(500).json({ message: 'Error reading uploads directory' });
+  }
+};
+
+// Delete all CVs
+const deletegPdfs = async (req, res) => {
+  const uploadDir = path.join(__dirname, '../../uploads');
+  console.log('Uploads directory:', uploadDir);
+
+  try {
+    const files = await fs.readdir(uploadDir);
+
+    const deletionResults = await Promise.allSettled(
+      files.map(async (file) => {
+        const filePath = path.join(uploadDir, file);
+        try {
+          await fs.unlink(filePath);
+          return { file, status: 'deleted' };
+        } catch (err) {
+          console.error(`Failed to delete file ${file}:`, err);
+          return { file, status: 'error', error: err.message };
+        }
+      })
+    );
+
+    res.status(200).json({ message: 'CV deletion complete', results: deletionResults });
+  } catch (err) {
+    console.error('Error deleting CVs:', err);
+    res.status(500).json({ message: 'Error deleting CVs', error: err.message });
+  }
+};
+
+// Get a specific PDF by user ID
+const getPdf = async (req, res) => {
+  try {
     const userId = req.params.id;
 
-    // Find the user in the database by ID
     const user = await Registration.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check if the CV path exists in the user document
     if (!user.cv) {
       return res.status(404).json({ message: 'CV not found for this user' });
     }
-    
-    // Resolve the absolute path of the CV
+
     const filePath = path.resolve(user.cv);
-    
-    // Send the file to the user
     res.sendFile(filePath, (err) => {
       if (err) {
         console.error('Error sending file:', err);
-        return res.status(500).json({ message: 'Error sending file' });
+        res.status(500).json({ message: 'Error sending file' });
       }
     });
   } catch (error) {
     console.error('Error retrieving CV:', error);
-    console.log(__dirname)
-    console.log(process.pwd,"..................")
     res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
 
-
-
-
-
-module.exports={uploadFile,getRegistration,deleteRegistration,getPdf}
+module.exports = {
+  uploadFile,
+  getRegistration,
+  deleteRegistration,
+  getPdf,
+  getPdfs,
+  deletegPdfs
+};

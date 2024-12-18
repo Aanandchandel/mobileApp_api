@@ -17,15 +17,16 @@ const storage = multer.diskStorage({
   // Initialize multer with the storage configuration
   const upload = multer({
     storage: storage,
-    // limits: { fileSize: 10 * 1024 * 1024 }, // Max size: 10MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // Max size: 5MB (adjust as needed)
     fileFilter: (req, file, cb) => {
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.mimetype)) {
-        return cb(new Error('Invalid file type. Only PDF and Word documents are allowed.'));
+        return cb(new Error('Invalid file type. Only JPEG, PNG, and GIF images are allowed.'));
       }
       cb(null, true);
     }
   });
+  
   
   module.exports=upload;
 

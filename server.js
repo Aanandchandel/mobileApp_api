@@ -2,12 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
-//Routs import
-const studentRoute=require("./src/routes/studentRoute.js")
-const paymentRoute=require("./src/routes/paymentRoute.js")
+//Routes import
 const connectdb=require("./src/config/dbconfig.js")
 const cors = require('cors');
-const Registration=require("./src/models/studentInfo.js")
 
 
 //for  Logging Requests
@@ -23,8 +20,7 @@ app.use(cors());
 app.use(morgan("combined"))
 
 // Routes
-app.use("/pay",paymentRoute);
-app.use("/student",studentRoute);
+
 
 app.get("/",(req,res)=>{
   console.log(req.headers.token)
